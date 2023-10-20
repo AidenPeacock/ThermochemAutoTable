@@ -69,7 +69,11 @@ namespace Thermochem
 
         private void btnCalc_Click(object sender, EventArgs e)
         {
+            // initialzing variables, the goal with this beginning section is to generalize as much as possible
+            // the inital query we do, whether the first selection is Temperature or pressure, and the second
+            // selection is one of the intensive variables (specific volume, internal energy enthalpy, entropy)
             int j = 0;
+            // slicing the strings from the combo boxes to match the sql table names
             int index1 = comboBox1.Text.IndexOf(" ");
             string queryvar1 = comboBox1.Text.Substring(0, index1);
             int index2 = comboBox2.Text.IndexOf("(");
@@ -77,6 +81,7 @@ namespace Thermochem
             string condition = "";
             string columnsquery = "";
             queryvar2 = queryvar2.Replace(" ", "_");
+            // depending on what variables are selected, some go into the first part of the query while others go into the last
             string[] columns = { "Temperature", "Pressure", "Specific_Volume_Liquid", "Specific_Volume_Gas",
                 "Internal_Energy_Liquid", "Internal_Energy_Gas",
                 "Enthalpy_Liquid", "Enthalpy_Gas"};
@@ -84,6 +89,8 @@ namespace Thermochem
             string[] columnsSelect = new string[7];
             string[] columns1 = { "Temperature", "Pressure", "Specific_Volume", "Internal_Energy", "Enthalpy"};
             string[] columnsSelect1 = new string[5];
+            // satcheck and satcheckabove and below give the index of the 2nd variable in the query so we can check 
+            // if the system is saturated or not
             string table = "";
             int satcheck = 0;
             int satcheckabove = 0;
@@ -96,9 +103,12 @@ namespace Thermochem
             outputSpecVol.Text = "";
             outputIntEng.Text = "";
             outputEnthalpy.Text = "";
+            // setting up to iterate through the contents of the result printers so we print the results in order
             IEnumerable<System.Windows.Forms.TextBox> textBoxes = resultpanel.Controls.OfType<System.Windows.Forms.TextBox>();
 
             j = 0;
+
+            // 373.95 is the highest temp value on A4, the for loops act to seperate the varibles for the query
             if ((queryvar1.Equals("Temperature") || queryvar1.Equals("Temperature") && !VarEnter1.Text.Equals("Pressure")) && double.Parse(VarEnter1.Text) < 373.95)
             {
                 table = "A4_TEMP_TABLE_SAT_WATER";
@@ -125,6 +135,7 @@ namespace Thermochem
 
                 }
             }
+            // different lists for different tables
             else
             {
                 table = "A6_TABLE_SUPERHEATED_WATER";
@@ -139,11 +150,13 @@ namespace Thermochem
                 }
 
             }
+            // we are using an intensive variable and need to append this to get a queryable result 
             if (!queryvar2.Equals("Temperature") && !queryvar2.Equals("Pressure"))
             {
                 abovespec = queryvar2 + "_Gas";
                 belowspec = queryvar2 + "_Liquid";
             }
+            // no intensive properties
             if (abovespec.Equals(""))
             {
                 satcheck = Array.IndexOf(columnsSelect, queryvar2);
@@ -154,6 +167,7 @@ namespace Thermochem
                 satcheckbelow = Array.IndexOf(columnsSelect, belowspec);
             }
 
+            // we now know we are dealing with the superheated vapour table 
             if (double.Parse(VarEnter1.Text) > 373.95 && comboBox1.Text.Equals("Temperature (Celcius)"))
             {
                 columnsquery = string.Join(", ", columnsSelect1);
@@ -167,6 +181,9 @@ namespace Thermochem
             }
             condition += queryvar1 + " = " + VarEnter1.Text;
             SqlConnection con = SqlConnect();
+            // PLEASE PLEASE PLEASE DONT USE THIS OUTSIDE OF YOUR HOME COMPUTER !!!!!
+            // THERE IS NO SQL INJECTION PROTECTION !!!!!!!!!
+            // legally i am now not accountable 
             string querystate = string.Format("SELECT {0} FROM {1} WHERE {2}", columnsquery, table, condition);
             con.Open();
             SqlCommand command = new SqlCommand(querystate, con);
@@ -181,6 +198,7 @@ namespace Thermochem
                     {
                         if (decimal.Parse(VarEnter2.Text)  > decimal.Parse(read.GetString(satcheck)))
                         {
+                            // when compressed liquid, we can grab values from A4
                             outputTemp.Text = VarEnter1.Text;
                             outputPress.Text = VarEnter2.Text;
                             outputSpecVol.Text = read.GetDecimal(1).ToString();
@@ -190,7 +208,7 @@ namespace Thermochem
                         }
                         else if (decimal.Parse(VarEnter2.Text) < decimal.Parse(read.GetString(satcheck)))
                         {
-
+                            // we now know it is a Superheated vapour
                             con.Close();
                             querystate = string.Format("SELECT Temperature, Pressure, Specific_Volume, Internal_Energy, Enthalpy FROM A6_TABLE_SUPERHEATED_WATER WHERE {0} AND {1} = {2}", condition, queryvar2, VarEnter2.Text);
                             con.Open();
@@ -264,6 +282,7 @@ namespace Thermochem
                                 }
                                 else if (double.Parse(VarEnter3.Text) <= 1 && double.Parse(VarEnter3.Text) >= 0)
                                 {
+                                    //saturated mix, need quality value
                                     outputTemp.Text = VarEnter1.Text;
                                     outputPress.Text = VarEnter2.Text;
                                     outputSpecVol.Text = (read.GetDecimal(1) + decimal.Parse(VarEnter3.Text) * (read.GetDecimal(2) - read.GetDecimal(1))).ToString();
@@ -319,7 +338,7 @@ namespace Thermochem
 
                         if (read.GetDecimal(satcheckabove) < decimal.Parse(VarEnter2.Text))
                         {
-                            
+                            // superheated vapour for intensive variables
                             con.Close();
                             querystate = string.Format("SELECT Temperature, Pressure, Specific_Volume, Internal_Energy, Enthalpy FROM A6_TABLE_SUPERHEATED_WATER WHERE {0} AND {1} = {2}", condition, queryvar2, VarEnter2.Text);
                             Console.WriteLine(querystate);
