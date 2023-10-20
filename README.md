@@ -2,6 +2,9 @@
 When doing thermochemistry calculations, one often has to do table lookups to find values needed to solve a particular problem,
 as the equations that govern the relationships between the variables of a system of water are too complicated to calculate explicitly.
 This program does that table lookup for you, given the values are on the tables somewhere, removing the need to constantly have to check table values
+This data was loaded into sql tables and queried from a c# windows forms GUI to give the correct numbers. 
+The data is origionally from a Thermochemistry textbook PDF, and so I wrote a python program to take in a text file that was basically the PDF copy and pasted
+into the text file, with additions of my own to make the data parseable and able to be put neatly into the sql table (Will upload scripts)
 
 ![Screenshot (127)](https://github.com/AidenPeacock/ThermochemAutoTable/assets/112777530/eb50a2d7-cde5-414b-9593-89dea1645763)
 
