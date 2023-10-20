@@ -11,5 +11,11 @@ into the text file, with additions of my own to make the data parseable and able
 This turned out to be much harder than origionally anticipated, as the usage of the thermochemistry tables requires some intuition for humans to
 use, and so writing out all the possible cases for a set of variables was an interesting challenge.
 
+If you want to clone this on your computer, follow the steps in the python files to load the data from the txt files into an sql database with tables named
+A4_TEMP_TABLE_SAT_WATER
+A5_PRESS_TABLE_SAT_WATER
+A6_TABLE_SUPERHEATED_WATER
+You need sql and preferrably ssms set up already to connect with pyodbc
+
 TODO: LINEAR INTERPOLATION :(
 Pressure Table support
